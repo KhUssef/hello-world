@@ -1,6 +1,10 @@
 pipeline {
     agent any
-    tools { nodejs "NodeJS" }
+
+    tools {
+        nodejs "NodeJS"
+    }
+
     environment {
         SONARQUBE_ENV = 'SonarQubeServer'
     }
@@ -15,26 +19,27 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci'
+                bat 'npm ci'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'npm test || true'
+                bat 'npm test || exit /b 0'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
-                    sh '''
-                    sonar-scanner \
-                      -Dsonar.projectKey=test\
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_AUTH_TOKEN
-                    '''
+
+                    bat """
+                    sonar-scanner ^
+                      -Dsonar.projectKey=test ^
+                      -Dsonar.sources=. ^
+                      -Dsonar.host.url=%SONAR_HOST_URL% ^
+                      -Dsonar.token=%SONAR_AUTH_TOKEN%
+                    """
                 }
             }
         }
